@@ -17,7 +17,7 @@ int main()
     if (use_avx)
         printf(avx ? "AVX available\n" : " AVX not available\n");
     int i, nx = 80000000;
-    int k, iter = 10;
+    int k, iter = 100;
     float *a, *b, *c1, *c2;
 
     a = (float *)malloc(nx * sizeof(float));
@@ -38,9 +38,11 @@ int main()
             for (i = 0; i < nx; i++)
                 c1[i] = a[i] + b[i];
 
+
     // using sse
     if (sse && use_sse)
     {
+        printf("SSE started\n");
         __m128 va, vb, vc;
         for (k = 0; k < iter; k++)
             for (i = 0; i < nx; i += 4)
@@ -50,6 +52,7 @@ int main()
                 vc = __builtin_ia32_addps(va, vb);
                 __builtin_ia32_storeups(&c2[i], vc);
             }
+        printf("SSE finished\n");
     }
 
     // result for SSE
@@ -64,15 +67,17 @@ int main()
     // using avx
     if (avx && use_avx)
     {
+        printf("AVX started\n");
         __m256 va, vb, vc;
         for (k = 0; k < iter; k++)
-            for (i = 0; i < nx; i += 4)
+            for (i = 0; i < nx; i += 8)
             {
                 va = _mm256_loadu_ps(&a[i]);
                 vb = _mm256_loadu_ps(&b[i]);
                 vc = _mm256_add_ps(va, vb);
                 _mm256_storeu_ps(&c2[i], vc);
             }
+        printf("AVX finished\n");
     }
 
     // result for AVX
